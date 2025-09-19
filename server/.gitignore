@@ -1,0 +1,46 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-debug.log
+.pnp/
+.pnp.cjs
+
+# Build artifacts
+build/
+dist/
+out/
+.next/ # For Next.js if used in client
+public/build/ # If client build output goes here
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Log files
+logs/
+*.log
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+*.swp
+*.bak
+*~
+.DS_Store # macOS specific
+
+# Test reports
+coverage/
+
+# Uploaded files (if applicable)
+uploads/
+
+# Database files (if local database files are used)
+data/db/
+*.sqlite
+*.sqlite3
+
+# Other temporary files
+tmp/
