@@ -35,16 +35,18 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+/* ROUTES */
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
+
 /* MONGOOSE SETUP */
 const PORT = process.env.PORT || 6001;
-const uri = process.env.MONGO_URL;
+export const connect = () =>
+  mongoose
+    .connect(process.env.MONGO_URL)
+    .then(() => {
+      app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
+    })
+    .catch((error) => console.log(`${error} did not connect`));
 
-const connectDb = async () => {
-  try {
-    const conn = await mongoose.connect(uri);
-    console.log(`Connected to MongoDB: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1);
-  }
-};
+// testing 
