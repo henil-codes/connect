@@ -48,5 +48,3 @@ const connectDb = async () => {
     process.exit(1);
   }
 };
-
-connectDb();
