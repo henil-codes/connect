@@ -8,7 +8,6 @@ import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
-import { MongoClient } from "mongodb";
 
 /* CONFIGURATIONS */
 const __filename = fileURLToPath(import.meta.url);
@@ -56,12 +55,3 @@ export const connect = () =>
     .catch((error) => console.log(`${error} did not connect`));
 
 // testing 
-console.log('PORT from env:', process.env.PORT);
-
-//call db connection and start server
-connect();
-
-//a test route
-app.get('/', (req, res) => {
-  res.send('Hello World! Server is running.');
-});
