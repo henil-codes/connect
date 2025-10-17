@@ -19,7 +19,13 @@ const App = () => {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Routes>
+            {/* Login Page */}
             <Route path="/" element={<LoginPage />} />
+
+            {/* Forgot Password - Public Access */}
+            <Route path="/forgotpass" element={<ForgotPass />} />
+
+            {/* Protected Routes */}
             <Route
               path="/home"
               element={isAuth ? <HomePage /> : <Navigate to="/" />}
