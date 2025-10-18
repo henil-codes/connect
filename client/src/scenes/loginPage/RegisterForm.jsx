@@ -27,7 +27,7 @@ const initialValuesRegister = {
   picture: "",
 };
 
-const RegistrationForm = () => {
+const RegisterForm = () => {
   const [serverError, setServerError] = useState("");
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
@@ -195,4 +195,4 @@ const RegistrationForm = () => {
   );
 };
 
-export default RegistrationForm;
+export default RegisterForm;
