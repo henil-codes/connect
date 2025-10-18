@@ -10,7 +10,6 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
   const isLogin = pageType === "login";
-  const isRegister = pageType === "register";
 
   return (
     <Box
