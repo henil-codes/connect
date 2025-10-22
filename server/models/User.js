@@ -38,10 +38,8 @@ const UserSchema = new mongoose.Schema(
       type: Array,
       default: [], // Stores user connections/friends
     },
-    location: String, // Optional field for user's location
-    occupation: String, // Optional field for user's occupation
-    viewedProfile: Number, // Tracks the number of times profile was viewed
-    impressions: Number, // Tracks the total number of post impressions
+    viewedProfile: Number,
+    impressions: Number,
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );

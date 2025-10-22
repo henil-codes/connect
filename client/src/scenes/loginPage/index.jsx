@@ -1,198 +1,110 @@
 import { useState } from "react";
-import { Box, Button, TextField, Typography, useMediaQuery } from "@mui/material";
-import { Formik } from "formik";
-import * as yup from "yup";
-import Dropzone from "react-dropzone";
-import FlexBetween from "components/FlexBetween";
+import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import LoginForm from "./LoginForm";
+import RegisterForm from "./RegisterForm";
 
-// Validation schema for registration
-const registerSchema = yup.object().shape({
-  firstName: yup.string().required("Required"),
-  lastName: yup.string().required("Required"),
-  email: yup.string().email("Invalid email").required("Required"),
-  password: yup.string().required("Required"),
-  location: yup.string().required("Required"),
-  occupation: yup.string().required("Required"),
-  picture: yup.mixed().required("Required"),
-});
-
-// Initial form values for registration
-const initialValuesRegister = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  password: "",
-  location: "",
-  occupation: "",
-  picture: "",
-};
-
-const RegistrationForm = () => {
-  const [serverError, setServerError] = useState("");
-  const isNonMobile = useMediaQuery("(min-width:600px)");
-
-  // Register function
-  const register = async (values, onSubmitProps) => {
-    setServerError("");
-    const formData = new FormData();
-    for (let key in values) formData.append(key, values[key]);
-    formData.append("picturePath", values.picture.name);
-
-    try {
-      const response = await fetch("http://localhost:3001/auth/register", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.msg || "Registration failed");
-      onSubmitProps.resetForm();
-      alert("Registration successful! You can now login.");
-    } catch (err) {
-      setServerError(err.message);
-    }
-  };
+const LoginPage = () => {
+  const [pageType, setPageType] = useState("login");
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
+  const isLogin = pageType === "login";
+  const isRegister = pageType === "register";
 
   return (
     <Box
-      width={isNonMobile ? "450px" : "90%"}
-      m="3rem auto"
-      p="2rem"
-      borderRadius="1rem"
-      sx={{
-        backgroundColor: "#fff",
-        boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
-      }}
+      minHeight="100vh"
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      backgroundColor={theme.palette.background.default}
+      p="1rem"
     >
-      <Formik
-        initialValues={initialValuesRegister}
-        validationSchema={registerSchema}
-        onSubmit={register}
+      {/* Header / Logo */}
+      <Box textAlign="center" mb="2rem">
+        <Typography
+          fontWeight="bold"
+          fontSize={isNonMobileScreens ? "3rem" : "2.5rem"}
+          color={theme.palette.mode === "dark" ? "white" : "black"}
+          sx={{
+            "&:hover": {
+              color: theme.palette.mode === "dark" ? "#ddd" : "#1976d2",
+              cursor: "pointer",
+              transition: "color 0.3s",
+            },
+          }}
+        >
+          Connect
+        </Typography>
+        <Typography
+          fontWeight="500"
+          fontSize="1rem"
+          color="textSecondary"
+          sx={{ mt: "0.5rem" }}
+        >
+          The Social Hub to Connect with Everyone
+        </Typography>
+      </Box>
+
+      {/* Form Container */}
+      <Box
+        width={isNonMobileScreens ? "40%" : "90%"}
+        p="3rem"
+        borderRadius="1.5rem"
+        backgroundColor={theme.palette.background.alt}
+        boxShadow="0 4px 20px rgba(0,0,0,0.1)"
       >
-        {({
-          values,
-          errors,
-          touched,
-          handleBlur,
-          handleChange,
-          handleSubmit,
-          setFieldValue,
-        }) => (
-          <form onSubmit={handleSubmit}>
-            <Box display="grid" gap="20px">
-              <TextField
-                label="First Name"
-                name="firstName"
-                value={values.firstName}
-                onBlur={handleBlur}
-                onChange={handleChange}
-                error={touched.firstName && Boolean(errors.firstName)}
-                helperText={touched.firstName && errors.firstName}
-                variant="outlined"
-              />
-              <TextField
-                label="Last Name"
-                name="lastName"
-                value={values.lastName}
-                onBlur={handleBlur}
-                onChange={handleChange}
-                error={touched.lastName && Boolean(errors.lastName)}
-                helperText={touched.lastName && errors.lastName}
-                variant="outlined"
-              />
-              <TextField
-                label="Location"
-                name="location"
-                value={values.location}
-                onBlur={handleBlur}
-                onChange={handleChange}
-                error={touched.location && Boolean(errors.location)}
-                helperText={touched.location && errors.location}
-                variant="outlined"
-              />
-              <TextField
-                label="Occupation"
-                name="occupation"
-                value={values.occupation}
-                onBlur={handleBlur}
-                onChange={handleChange}
-                error={touched.occupation && Boolean(errors.occupation)}
-                helperText={touched.occupation && errors.occupation}
-                variant="outlined"
-              />
+        <Typography
+          fontWeight="500"
+          variant="h5"
+          sx={{ mb: "2rem", textAlign: "center" }}
+        >
+          {isLogin ? "Welcome Back!" : "Create an Account"}
+        </Typography>
 
-              <Box border={`1px solid #1D9BF0`} borderRadius="5px" p="1rem">
-                <Dropzone
-                  acceptedFiles=".jpg,.jpeg,.png"
-                  multiple={false}
-                  onDrop={(acceptedFiles) => setFieldValue("picture", acceptedFiles[0])}
-                >
-                  {({ getRootProps, getInputProps }) => (
-                    <Box
-                      {...getRootProps()}
-                      border={`2px dashed #1D9BF0`}
-                      p="1rem"
-                      sx={{ "&:hover": { cursor: "pointer" } }}
-                    >
-                      <input {...getInputProps()} />
-                      {!values.picture ? (
-                        <Typography>Add Picture Here</Typography>
-                      ) : (
-                        <FlexBetween>
-                          <Typography>{values.picture.name}</Typography>
-                        </FlexBetween>
-                      )}
-                    </Box>
-                  )}
-                </Dropzone>
-              </Box>
+        {/* Render Login or Register Form */}
+        {isLogin ? <LoginForm /> : <RegisterForm />}
 
-              <TextField
-                label="Email"
-                name="email"
-                value={values.email}
-                onBlur={handleBlur}
-                onChange={handleChange}
-                error={touched.email && Boolean(errors.email)}
-                helperText={touched.email && errors.email}
-                variant="outlined"
-              />
-              <TextField
-                label="Password"
-                name="password"
-                type="password"
-                value={values.password}
-                onBlur={handleBlur}
-                onChange={handleChange}
-                error={touched.password && Boolean(errors.password)}
-                helperText={touched.password && errors.password}
-                variant="outlined"
-              />
-            </Box>
+        {/* Toggle between Login and Register */}
+        <Typography
+          onClick={() => setPageType(isLogin ? "register" : "login")}
+          sx={{
+            textDecoration: "underline",
+            color: "#1D9BF0",
+            textAlign: "center",
+            mt: "1rem",
+            cursor: "pointer",
+            fontWeight: "500",
+            "&:hover": { color: "#1A8CD8" },
+          }}
+        >
+          {isLogin
+            ? "Don't have an account? Sign Up here."
+            : "Already have an account? Login here."}
+        </Typography>
 
-            {serverError && (
-              <Typography color="#D32F2F" textAlign="center" mt="0.5rem" mb="0.5rem">
-                {serverError}
-              </Typography>
-            )}
-
-            <Button
-              type="submit"
-              fullWidth
-              sx={{
-                mt: "1.5rem",
-                backgroundColor: "#000",
-                color: "#fff",
-                fontWeight: "bold",
-                "&:hover": { backgroundColor: "#1D9BF0", color: "#fff" },
-              }}
-            >
-              REGISTER
-            </Button>
-          </form>
+        {/* Forgot Password Link - Only show on login */}
+        {isLogin && (
+          <Typography
+            onClick={() => navigate("/forgotpass")}
+            sx={{
+              textDecoration: "underline",
+              color: "#1D9BF0",
+              textAlign: "center",
+              mt: "0.5rem",
+              cursor: "pointer",
+              fontWeight: "500",
+              "&:hover": { color: "#1A8CD8" },
+            }}
+          >
+            Forgot Password?
+          </Typography>
         )}
-      </Formik>
+      </Box>
     </Box>
   );
 };
 
-export default RegistrationForm;
+export default LoginPage;

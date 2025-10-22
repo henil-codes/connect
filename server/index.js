@@ -1,6 +1,5 @@
 import express from "express";
 import bodyParser from "body-parser";
-import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import multer from "multer";
@@ -8,7 +7,8 @@ import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
-import { MongoClient } from "mongodb";
+import { register, login } from "./controllers/auth.js";
+import connect from "./utils/conn.js";
 
 /* CONFIGURATIONS */
 const __filename = fileURLToPath(import.meta.url);
@@ -21,11 +21,20 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors({
-  origin: "http://localhost:5173", 
-  credentials: true,               
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
+
+app.listen(process.env.PORT || 6001, () => {
+  console.log(`Server Port: ${process.env.PORT || 6001}`);
+});
+
+/* CONNECT TO MONGOOSE */
+connect();
 
 /* FILE STORAGE */
 const storage = multer.diskStorage({
@@ -39,29 +48,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /* ROUTES */
-app.use("/auth", authRoutes);
+
+app.get("/", (req, res) => {
+  res.json({"message" : "Server is running"});
+})
+
+// app.use("/auth", authRoutes);
 // app.use("/users", userRoutes);
 
 //route for registration and upload the registration image to multer
-app.post("/auth/register", upload.single("picture"),register);
-
-/* MONGOOSE SETUP */
-const PORT = process.env.PORT || 6001;
-export const connect = () =>
-  mongoose
-    .connect(process.env.MONGO_URL)
-    .then(() => {
-      app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
-    })
-    .catch((error) => console.log(`${error} did not connect`));
-
-// testing 
-console.log('PORT from env:', process.env.PORT);
-
-//call db connection and start server
-connect();
-
-//a test route
-app.get('/', (req, res) => {
-  res.send('Hello World! Server is running.');
-});
+app.post("/auth/register", upload.single("picture"), register);
+app.post("/auth/login", login);
