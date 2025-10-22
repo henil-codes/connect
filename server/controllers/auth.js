@@ -10,7 +10,7 @@ import User from "../models/User.js";
  * @param {Object} req - Express request object, expects user data in req.body
  * @param {Object} res - Express response object
  */
-export const register = async (req, res) => {
+const register = async (req, res) => {
   try {
     const {
       firstName,
@@ -59,7 +59,7 @@ export const register = async (req, res) => {
  * @param {Object} req - Express request object, expects email & password in req.body
  * @param {Object} res - Express response object
  */
-export const login = async (req, res) => {
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -84,3 +84,5 @@ export const login = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export { register, login };
