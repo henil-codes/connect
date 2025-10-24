@@ -9,12 +9,10 @@ import connect from "./utils/conn.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config();
-
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
-app.listen(process.env.PORT || 6001, () => {
-  console.log(`Server Port: ${process.env.PORT || 6001}`);
-});
+const PORT = process.env.PORT || 6001;
+app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
 
 /* CONNECT TO MONGOOSE */
 connect();
