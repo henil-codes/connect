@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
  * @param {Object} res - Express response object
  * @param {Function} next - Express next middleware function
  */
-export const verifyToken = async (req, res, next) => {
+const verifyToken = async (req, res, next) => {
     try {
         // Retrieve token from the Authorization header
         let token = req.header("Authorization");
@@ -36,3 +36,5 @@ export const verifyToken = async (req, res, next) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+export default verifyToken;
