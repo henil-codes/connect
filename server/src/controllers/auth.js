@@ -82,12 +82,18 @@ const forgotPassword = async (req, res) => {
     const authToken = process.env.COURIER_API_KEY;
     const courier = CourierClient({ authorizationToken: authToken });
 
+    // Find the user by email
+    const { email } = req.body;
+    const user = await User.findOne({ email: email });
+
+    if (!user) return res.status(400).json({ msg: "The user doesn't exist." });
+
     const { requestId } = await courier.send({
       message: {
         to: {
           email: "code80147@gmail.com",
         },
-        template: "GCQ5HSY8KRM46SHQACVA56ZQSGDY",
+        template: process.env.COURIER_TEMPLATE_ID,
         data: {},
       },
     });

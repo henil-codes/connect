@@ -4,7 +4,10 @@ import mongoose from "mongoose";
 const PORT = process.env.PORT || 6001;
 const connect = () => {
   mongoose
-    .connect(process.env.MONGO_URL)
+    .connect(process.env.MONGO_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
     .catch((error) => console.log(`${error} did not connect`));
 };
 

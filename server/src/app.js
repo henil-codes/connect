@@ -22,15 +22,8 @@ app.use(cookieParser())
 
 /* IMPORT ROUTES */
 import authRouter from "./routes/auth.js";
-import userRouter from "./routes/users.js";
 
 /* ROUTES DEFINITION */
 app.use("/auth", authRouter);
-app.use("/users", userRouter);
-
-app.get("/", (req, res) => {
-  res.send("Home Page");
-});
-
 
 export default app;
