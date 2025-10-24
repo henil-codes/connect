@@ -24,7 +24,7 @@ const App = () => {
             <Route path="/" element={<LoginPage />} />
 
             {/* Forgot Password - Public Access */}
-            <Route path="/forgotpass" element={<ForgotPass />} />
+            {/* <Route path="/forgotpass" element={<ForgotPass />} />  */}
 
             {/* Protected Routes */}
             <Route
@@ -35,6 +35,7 @@ const App = () => {
               path="/profile/:userId"
               element={isAuth ? <ProfilePage /> : <Navigate to="/" />}
             />
+            
           </Routes>
         </ThemeProvider>
       </BrowserRouter>
