@@ -22,11 +22,11 @@ app.use(cookieParser())
 
 /* IMPORT ROUTES */
 import authRouter from "./routes/auth.js";
-// import userRouter from "./src/routes/users.js";
+import userRouter from "./routes/users.js";
 
 /* ROUTES DEFINITION */
-app.use("/api/v1/auth", authRouter);
-// app.use("/api/v1/users", userRouter);
+app.use("/auth", authRouter);
+app.use("/users", userRouter);
 
 app.get("/", (req, res) => {
   res.send("Home Page");
