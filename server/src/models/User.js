@@ -30,6 +30,9 @@ const UserSchema = new mongoose.Schema(
       required: true,
       min: 5, // Minimum length for password security
     },
+    refreshToken: {
+      type: String,
+    },
     picturePath: {
       type: String,
       default: "", // Default empty string if no profile picture is provided

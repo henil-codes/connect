@@ -19,8 +19,6 @@ const register = async (req, res) => {
       password,
       picturePath,
       friends,
-      location,
-      occupation,
     } = req.body;
 
     // Generate a random salt and hash the password for security
@@ -35,8 +33,6 @@ const register = async (req, res) => {
       password: passwordHash,
       picturePath,
       friends,
-      location,
-      occupation,
       viewedProfile: Math.floor(Math.random() * 10000),
       impressions: Math.floor(Math.random() * 10000),
     });
@@ -83,6 +79,11 @@ const login = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+};
+
+
+const forgotPassword = async (req, res) => {
+  // Implementation for forgot password functionality
 };
 
 export { register, login };
