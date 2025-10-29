@@ -21,18 +21,17 @@
   "dependencies": {
     "@trycourier/courier": "^6.6.0",
     "bcrypt": "^6.0.0",
-    "body-parser": "^2.2.0",
+    "cloudinary": "^2.8.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
-    "gridfs-stream": "^1.1.1",
+    "fs": "^0.0.1-security",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.1",
     "morgan": "^1.10.1",
-    "multer": "^2.0.2",
-    "multer-gridfs-storage": "^5.0.2"
+    "multer": "^2.0.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

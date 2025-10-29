@@ -19,6 +19,14 @@ const UserSchema = new mongoose.Schema(
       min: 2,
       max: 50,
     },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      index: true,
+    },
     email: {
       type: String,
       required: true,
@@ -41,12 +49,17 @@ const UserSchema = new mongoose.Schema(
       type: Array,
       default: [], // Stores user connections/friends
     },
-    viewedProfile: Number,
-    impressions: Number,
+    viewedProfile: {
+      type: Number,
+      default: 0
+    },
+    impressions: {
+      type: Number,
+      default: 0
+    },
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );
 
 // Creating and exporting the User model based on UserSchema
-const User = mongoose.model("User", UserSchema);
-export default User;
+export const User = mongoose.model("User", UserSchema);
