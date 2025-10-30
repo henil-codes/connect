@@ -9,8 +9,4 @@ const storage = multer.diskStorage({
   },
 });
 
-<<<<<<< Updated upstream
 export const upload = multer({ storage });
-=======
-export const upload = multer({ storage });
->>>>>>> Stashed changes
