@@ -1,4 +1,6 @@
 import jwt from 'jsonwebtoken';
+import { ApiError } from '../utils/ApiError.js';
+import User from '../models/User.js';
 
 /**
  * Middleware to verify JWT tokens in incoming requests.
@@ -11,25 +13,27 @@ import jwt from 'jsonwebtoken';
 const verifyToken = async (req, res, next) => {
     try {
         // Retrieve token from the Authorization header
-        let token = req.header("Authorization");
+        let token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
 
         // If no token is provided, deny access
         if (!token) {
-            return res.status(403).send("Access Denied!");
-        }
-
-        // Remove "Bearer " prefix if present
-        if (token.startsWith("Bearer")) {
-            token = token.slice(7, token.length).trimLeft();
+            throw new ApiError(401, "Unauthorized request: No token provided");
         }
 
         // Verify the token using the secret key
-        const verified = jwt.verify(token, process.env.JWT_SECRET);
+        const verified = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        
+        // Fetch the user associated with the token
+        const user = await User.findById(verified._id).select("-password -refreshToken -__v");
 
-        // Attach the verified user info to the request object
-        req.user = verified;
+        if (!user) {
+            throw new ApiError(401, "Unauthorized request: User not found");
+        }
 
-        // Proceed to the next middleware or route handler
+        // Attach the user info to the request object
+        req.user = user;
+
+        // Proceed to the next middleware or route handler 
         next();
     } catch (err) {
         // Return error if token verification fails
