@@ -1,12 +1,10 @@
 import User from "../models/User.js";
+
 /* READ */
-const getUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const user = await User.findById(id);
-    res.status(200).json(user);
-  } catch (err) {
-    res.status(404).json({ message: err.message });
-  }
+const getCurrentUser = async (req, res) => {
+  return res
+  .status(200)
+  .json({user: req.user, msg: "User fetched successfully"});
 };
-export { getUser };
+
+export { getCurrentUser };
