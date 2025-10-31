@@ -29,16 +29,16 @@ const register = async (req, res) => {
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);
 
-    const avatarLocal = req.file?.path;
+    const picturePathLocal = req.file?.path;
 
-    if (!avatarLocal) {
+    if (!picturePathLocal) {
       throw new ApiError(400, "Local avatar path is required");
     }
 
-    const avatarPath = await uploadToCloudinary(avatarLocal);
+    const picturePath = await uploadToCloudinary(picturePathLocal);
 
-    if (!avatarPath) {
-      throw new ApiError(400, "Avatar path is required");
+    if (!picturePath) {
+      throw new ApiError(400, "Picture path is required");
     }
 
     // Create a new user instance with hashed password and random activity metrics
@@ -47,7 +47,7 @@ const register = async (req, res) => {
       lastName,
       email,
       password: passwordHash,
-      avatar: avatarPath,
+      picturePath: picturePath,
       friends,
       viewedProfile: Math.floor(Math.random() * 10000),
       impressions: Math.floor(Math.random() * 10000),
@@ -79,6 +79,8 @@ const login = async (req, res) => {
       user._id
     );
 
+    const token = accessToken;
+
     // Remove password before sending the user object to the client
     const loggedInUser = await User.findById(user._id).select(
       "-password -refreshToken"
@@ -94,7 +96,7 @@ const login = async (req, res) => {
       .status(200)
       .cookie("refreshToken", refreshToken, options)
       .cookie("accessToken", accessToken, options)
-      .json({ loggedInUser, msg: "Login successful" });
+      .json({ token, loggedInUser, msg: "Login successful" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

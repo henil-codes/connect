@@ -5,7 +5,7 @@ import verifyToken from "../middleware/auth.js";
 
 const authRouter = Router();
 
-authRouter.route("/register").post(upload.single("avatar"), register);
+authRouter.route("/register").post(upload.single("picturePath"), register);
 authRouter.route("/login").post(login);
 authRouter.route("/logout").post(verifyToken, logout);
 
