@@ -1,6 +1,8 @@
 import { Router } from "express";
-import { getUser } from "../controllers/users.js";
+import { getCurrentUser } from "../controllers/users.js";
 import verifyToken from "../middleware/auth.js";
-const router = Router();
-router.route("/:id").get(verifyToken, getUser);
-export default router;
+
+const authRouter = Router();
+authRouter.route("/:id").get(verifyToken, getCurrentUser);
+
+export default authRouter;

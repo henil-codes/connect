@@ -43,7 +43,7 @@ const UserSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
-    picturePath: {
+    avatar: {
       type: String,
       default: "", // Default empty string if no profile picture is provided
     },

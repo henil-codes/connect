@@ -29,16 +29,16 @@ const register = async (req, res) => {
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);
 
-    const picturePathLocal = req.file?.path;
+    const avatarLocal = req.file?.path;
 
-    if (!picturePathLocal) {
-      throw new ApiError(400, "Local picture path is required");
+    if (!avatarLocal) {
+      throw new ApiError(400, "Local avatar path is required");
     }
 
-    const picturePath = await uploadToCloudinary(picturePathLocal);
+    const avatarPath = await uploadToCloudinary(avatarLocal);
 
-    if (!picturePath) {
-      throw new ApiError(400, "Picture path is required");
+    if (!avatarPath) {
+      throw new ApiError(400, "Avatar path is required");
     }
 
     // Create a new user instance with hashed password and random activity metrics
@@ -47,7 +47,7 @@ const register = async (req, res) => {
       lastName,
       email,
       password: passwordHash,
-      picturePath: picturePath,
+      avatar: avatarPath,
       friends,
       viewedProfile: Math.floor(Math.random() * 10000),
       impressions: Math.floor(Math.random() * 10000),
