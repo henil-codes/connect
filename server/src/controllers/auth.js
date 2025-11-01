@@ -157,4 +157,27 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-export { register, login, logout, forgotPassword };
+// Implementation for change password functionality
+const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    // Find the user by ID
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    // Check if the old password is correct
+    const isMatch = await user.isPasswordCorrect(oldPassword);
+    if (!isMatch) return res.status(400).json({ msg: "Old password is incorrect" });
+
+    // Hash the new password and update the user
+    user.password = await hashPassword(newPassword);
+    await user.save();
+
+    res.status(200).json({ msg: "Password changed successfully" });
+  } catch (error) {
+    res.status(500).json("Change password error: " + error.message);
+  }
+}
+
+export { register, login, logout, forgotPassword, changePassword };

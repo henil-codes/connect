@@ -51,6 +51,7 @@ const UserSchema = new mongoose.Schema(
       type: Array,
       default: [], // Stores user connections/friends
     },
+    bio: String,
     viewedProfile: {
       type: Number,
       default: 0,
