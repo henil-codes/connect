@@ -16,13 +16,14 @@ const createPost = async (req, res) => {
 
     const uploadedPost = await uploadToCloudinary(picturePath);
     console.log(uploadedPost);
+    console.log("User Object:", req.user)
 
     const newPost = new Post({
       userId: req.user._id,
       firstName: req.user.firstName,
       lastName: req.user.lastName,
       description,
-      avatar: req.user.avatar,
+      userPicturePath: req.user.picturePath,
       picturePath: uploadedPost,
       likes: {},
       comments: [],
@@ -39,15 +40,22 @@ const createPost = async (req, res) => {
   }
 };
 
+const getIndividualPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const post = await Post.findById(postId);
+    if (!post) {
+      throw new ApiError(404, "Post not found");
+    }
+    return res.status(200).json({ post });
+  } catch (err) {
+    throw new ApiError(500, "Internal server error");
+  }
+};
+
 // Get posts for a specific user with pagination
 const getUserPosts = async (req, res) => {
   try {
-    console.log({
-      user: req.user,
-      body: req.body,
-      query: req.query,
-      params: req.params,
-    });
     const { page = 1, limit = 10 } = req.query;
     const userId = req.user._id;
     const posts = await Post.find({ userId })
@@ -94,9 +102,52 @@ const likePost = async (req, res) => {
       { likes: post.likes },
       { new: true }
     );
+
+    return res.status(200).json({ post: updatePost });
   } catch (err) {
     throw new ApiError(500, err.message);
   }
 };
 
-export { createPost, getUserPosts, getFeedPosts };
+const deletePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const post = await Post.findById(postId);
+    if (!post) {
+      throw new ApiError(404, "Post not found");
+    }
+
+    if (post.userId.toString() !== req.user._id.toString()) {
+      throw new ApiError(403, "You are not authorized to delete this post");
+    }
+
+    await Post.findByIdAndDelete(postId);
+    return res.status(200).json({ msg: "Post deleted successfully" });
+  } catch (err) {
+    throw new ApiError(500, err.message);
+  }
+};
+
+const updatePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { description } = req.body;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      throw new ApiError(404, "Post not found");
+    }
+    
+    if (post.userId.toString() !== req.user._id.toString()) {
+      throw new ApiError(403, "You are not authorized to update this post");
+    }
+
+    post.description = description;
+    const updatedPost = await post.save();
+    return res.status(200).json({ post: updatedPost });
+  } catch (err) {
+    throw new ApiError(500, err.message);
+  }
+};
+
+export { createPost, getUserPosts, getFeedPosts, likePost, deletePost, updatePost, getIndividualPost };
