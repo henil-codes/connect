@@ -31,7 +31,7 @@ const verifyToken = async (req, res, next) => {
         }
 
         // Attach the user info to the request object
-        req.user = user;
+        req.user = user;`1`
 
         // Proceed to the next middleware or route handler 
         next();
