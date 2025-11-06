@@ -44,3 +44,7 @@ data/db/
 
 # Other temporary files
 tmp/
+
+.vscode/
+
+public/
