@@ -9,6 +9,13 @@ import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
 import { MongoClient } from "mongodb";
+import authRoutes from "./routes/auth.js";
+import userRoutes from "./routes/users.js";
+import postRoutes from "./routes/posts.js";
+import { register } from "./controllers/auth.js";
+import { createPost } from "./controllers/posts.js";
+import { verifyToken } from "./middleware/auth.js";
+
 
 /* CONFIGURATIONS */
 const __filename = fileURLToPath(import.meta.url);
@@ -40,10 +47,12 @@ const upload = multer({ storage });
 
 /* ROUTES */
 app.use("/auth", authRoutes);
-// app.use("/users", userRoutes);
+app.use("/users", userRoutes);
+app.use("/posts", postRoutes);
 
 //route for registration and upload the registration image to multer
-app.post("/auth/register", upload.single("picture"),register);
+app.post("/auth/register", upload.single("picture"), register);
+app.post("/posts", verifyToken, upload.single("picture"), createPost);
 
 /* MONGOOSE SETUP */
 const PORT = process.env.PORT || 6001;
@@ -51,7 +60,9 @@ export const connect = () =>
   mongoose
     .connect(process.env.MONGO_URL)
     .then(() => {
-      app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
+      app.listen(PORT, () => {
+        console.log(`Server Port: ${PORT}`);
+      });
     })
     .catch((error) => console.log(`${error} did not connect`));
 
@@ -64,4 +75,9 @@ connect();
 //a test route
 app.get('/', (req, res) => {
   res.send('Hello World! Server is running.');
+});
+
+// Test auth endpoint
+app.get('/auth/test', (req, res) => {
+  res.json({ message: 'Auth routes are working', timestamp: new Date().toISOString() });
 });

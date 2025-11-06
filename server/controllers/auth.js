@@ -50,4 +50,48 @@ export const register = async (req, res) => {
   }
 };
 
-/* LOGGING IN */
+/**
+ * LOGIN USER
+ * Handles user login by validating credentials and returning a JWT token
+ * 
+ * @param {Object} req - Express request object, expects email and password in req.body
+ * @param {Object} res - Express response object
+ */
+export const login = async (req, res) => {
+  try {
+    console.log("Login attempt:", req.body);
+    const { email, password } = req.body;
+
+    // Find user by email
+    console.log("Looking for user with email:", email);
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      console.log("User not found");
+      return res.status(400).json({ msg: "User does not exist." });
+    }
+
+    console.log("User found:", user.firstName, user.lastName);
+
+    // Check if password matches
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      console.log("Password mismatch");
+      return res.status(400).json({ msg: "Invalid credentials." });
+    }
+
+    console.log("Password matches, generating token");
+
+    // Generate JWT token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    delete user.password; // Remove password from response
+    
+    console.log("Login successful for:", user.firstName, user.lastName);
+    res.status(200).json({ token, user });
+
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+

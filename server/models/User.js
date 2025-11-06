@@ -36,10 +36,25 @@ const UserSchema = new mongoose.Schema(
     },
     friends: {
       type: Array,
-      default: [], // Stores user connections/friends
+      default: [], // Stores confirmed friends
+    },
+    friendRequestsSent: {
+      type: Array,
+      default: [], // Friend requests sent by this user
+    },
+    friendRequestsReceived: {
+      type: Array,
+      default: [], // Friend requests received by this user
     },
     location: String, // Optional field for user's location
     occupation: String, // Optional field for user's occupation
+    bio: {
+      type: String,
+      default: "", // User's bio/description
+      maxlength: 160, // Twitter-like bio length limit
+    },
+    resetPasswordToken: String, // Token for password reset
+    resetPasswordExpires: Date, // Expiration time for reset token
     viewedProfile: Number, // Tracks the number of times profile was viewed
     impressions: Number, // Tracks the total number of post impressions
   },
