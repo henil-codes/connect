@@ -3,8 +3,34 @@ import User from "../models/User.js";
 /* READ */
 const getCurrentUser = async (req, res) => {
   return res
-  .status(200)
-  .json({user: req.user, msg: "User fetched successfully"});
+    .status(200)
+    .json({ user: req.user, msg: "User fetched successfully" });
+};
+
+const getUserFriends = async (req, res) => {
+  try {
+    const friends = req.user.friends;
+
+    const validFriends = friends.filter((id) => id); // Filter out any undefined or null IDs
+
+    if(validFriends.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    const friendDetails = await Promise.all(
+      validFriends.map((id) => User.findById(id))
+    );
+
+    const formattedFriends = friendDetails.map(
+      ({ _id, firstName, lastName, picturePath }) => {
+        return { _id, firstName, lastName, picturePath };
+      }
+    );
+
+    return res.status(200).json({ friends: formattedFriends });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 const updateUserDetails = async (req, res) => {
@@ -26,7 +52,7 @@ const updateUserDetails = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}
+};
 
 const updateProfilePicture = async (req, res) => {
   try {
@@ -50,4 +76,9 @@ const updateProfilePicture = async (req, res) => {
   }
 };
 
-export { getCurrentUser, updateUserDetails, updateProfilePicture };
+export {
+  getCurrentUser,
+  updateUserDetails,
+  updateProfilePicture,
+  getUserFriends,
+};

@@ -1,9 +1,15 @@
 import { useState } from "react";
-import { Box, Button, TextField, Typography, useMediaQuery } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
 import Dropzone from "react-dropzone";
-import FlexBetween from "components/FlexBetween";
+import FlexBetween from "components/ui/FlexBetween";
 
 // Validation schema for registration
 const registerSchema = yup.object().shape({
@@ -11,9 +17,7 @@ const registerSchema = yup.object().shape({
   lastName: yup.string().required("Required"),
   email: yup.string().email("Invalid email").required("Required"),
   password: yup.string().required("Required"),
-  location: yup.string().required("Required"),
-  occupation: yup.string().required("Required"),
-  picture: yup.mixed().required("Required"),
+  picturePath: yup.mixed().required("Required"),
 });
 
 // Initial form values for registration
@@ -22,9 +26,7 @@ const initialValuesRegister = {
   lastName: "",
   email: "",
   password: "",
-  location: "",
-  occupation: "",
-  picture: "",
+  picturePath: "",
 };
 
 const RegistrationForm = () => {
@@ -99,32 +101,13 @@ const RegistrationForm = () => {
                 helperText={touched.lastName && errors.lastName}
                 variant="outlined"
               />
-              <TextField
-                label="Location"
-                name="location"
-                value={values.location}
-                onBlur={handleBlur}
-                onChange={handleChange}
-                error={touched.location && Boolean(errors.location)}
-                helperText={touched.location && errors.location}
-                variant="outlined"
-              />
-              <TextField
-                label="Occupation"
-                name="occupation"
-                value={values.occupation}
-                onBlur={handleBlur}
-                onChange={handleChange}
-                error={touched.occupation && Boolean(errors.occupation)}
-                helperText={touched.occupation && errors.occupation}
-                variant="outlined"
-              />
-
               <Box border={`1px solid #1D9BF0`} borderRadius="5px" p="1rem">
                 <Dropzone
                   acceptedFiles=".jpg,.jpeg,.png"
                   multiple={false}
-                  onDrop={(acceptedFiles) => setFieldValue("picture", acceptedFiles[0])}
+                  onDrop={(acceptedFiles) =>
+                    setFieldValue("picturePath", acceptedFiles[0])
+                  }
                 >
                   {({ getRootProps, getInputProps }) => (
                     <Box
@@ -170,7 +153,12 @@ const RegistrationForm = () => {
             </Box>
 
             {serverError && (
-              <Typography color="#D32F2F" textAlign="center" mt="0.5rem" mb="0.5rem">
+              <Typography
+                color="#D32F2F"
+                textAlign="center"
+                mt="0.5rem"
+                mb="0.5rem"
+              >
                 {serverError}
               </Typography>
             )}

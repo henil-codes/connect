@@ -5,9 +5,9 @@ import {
   WorkOutlineOutlined,
 } from "@mui/icons-material";
 import { Box, Typography, Divider, useTheme } from "@mui/material";
-import UserImage from "components/UserImage";
-import FlexBetween from "components/FlexBetween";
-import WidgetWrapper from "components/WidgetWrapper";
+import UserImage from "components/ui/UserImage";
+import FlexBetween from "components/ui/FlexBetween";
+import WidgetWrapper from "components/ui/WidgetWrapper";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -45,7 +45,7 @@ const UserWidget = ({ userId, picturePath }) => {
     occupation,
     viewedProfile,
     impressions,
-    friends,
+    friends = 0,
   } = user;
 
   return (

@@ -1,10 +1,8 @@
+// src/features/post/MyPostWidget.jsx
 import {
   EditOutlined,
   DeleteOutlined,
-  AttachFileOutlined,
-  GifBoxOutlined,
   ImageOutlined,
-  MicOutlined,
   MoreHorizOutlined,
 } from "@mui/icons-material";
 import {
@@ -17,10 +15,10 @@ import {
   IconButton,
   useMediaQuery,
 } from "@mui/material";
-import FlexBetween from "components/FlexBetween";
+import FlexBetween from "components/ui/FlexBetween";
 import Dropzone from "react-dropzone";
-import UserImage from "components/UserImage";
-import WidgetWrapper from "components/WidgetWrapper";
+import UserImage from "components/ui/UserImage";
+import WidgetWrapper from "components/ui/WidgetWrapper";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setPosts } from "state";
@@ -38,23 +36,33 @@ const MyPostWidget = ({ picturePath }) => {
   const medium = palette.neutral.medium;
 
   const handlePost = async () => {
+    if (!post.trim()) return; // Prevent empty posts
+
     const formData = new FormData();
-    formData.append("userId", _id);
     formData.append("description", post);
     if (image) {
-      formData.append("picture", image);
-      formData.append("picturePath", image.name);
+      formData.append("picture", image); // File object
     }
 
-    const response = await fetch(`http://localhost:3001/posts`, {
+    // Create the post
+    await fetch(`http://localhost:3001/posts`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
-    const posts = await response.json();
-    dispatch(setPosts({ posts }));
+
+    // Refetch all posts to update the feed
+    const response = await fetch("http://localhost:3001/posts", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const allPosts = await response.json();
+    dispatch(setPosts({ posts: allPosts }));
+
+    // Reset form
     setImage(null);
     setPost("");
+    setIsImage(false);
   };
 
   return (
@@ -73,6 +81,7 @@ const MyPostWidget = ({ picturePath }) => {
           }}
         />
       </FlexBetween>
+
       {isImage && (
         <Box
           border={`1px solid ${medium}`}
@@ -134,18 +143,7 @@ const MyPostWidget = ({ picturePath }) => {
         {isNonMobileScreens ? (
           <>
             <FlexBetween gap="0.25rem">
-              <GifBoxOutlined sx={{ color: mediumMain }} />
-              <Typography color={mediumMain}>Clip</Typography>
-            </FlexBetween>
-
-            <FlexBetween gap="0.25rem">
-              <AttachFileOutlined sx={{ color: mediumMain }} />
-              <Typography color={mediumMain}>Attachment</Typography>
-            </FlexBetween>
-
-            <FlexBetween gap="0.25rem">
-              <MicOutlined sx={{ color: mediumMain }} />
-              <Typography color={mediumMain}>Audio</Typography>
+              <MoreHorizOutlined sx={{ color: mediumMain }} />
             </FlexBetween>
           </>
         ) : (
@@ -155,12 +153,13 @@ const MyPostWidget = ({ picturePath }) => {
         )}
 
         <Button
-          disabled={!post}
+          disabled={!post.trim()}
           onClick={handlePost}
           sx={{
             color: palette.background.alt,
             backgroundColor: palette.primary.main,
             borderRadius: "3rem",
+            textTransform: "none",
           }}
         >
           POST

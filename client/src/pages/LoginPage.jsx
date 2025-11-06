@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import LoginForm from "./LoginForm";
+import LoginForm from "../features/auth/LoginForm";
 import RegisterForm from "./RegisterPage";
 
 const LoginPage = () => {

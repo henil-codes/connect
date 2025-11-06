@@ -9,8 +9,8 @@ const postsRouter = Router();
 postsRouter.use(verifyToken);
 
 postsRouter.route("/").get(getFeedPosts);
-postsRouter.route("/:postId").delete(deletePost).put(updatePost).get(getIndividualPost);
+postsRouter.route("/:id").delete(deletePost).put(updatePost).get(getIndividualPost);
 postsRouter.route("/:id/posts").post(upload.single("picturePath"), createPost).get(getUserPosts);
-postsRouter.route("/:postId/like").put(likePost);
+postsRouter.route("/:id/like").patch(likePost);
 
 export default postsRouter;

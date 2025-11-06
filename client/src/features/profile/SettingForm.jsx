@@ -9,7 +9,7 @@ import {
   Paper,
   useMediaQuery,
 } from "@mui/material";
-import WidgetWrapper from "components/WidgetWrapper";
+import WidgetWrapper from "components/ui/WidgetWrapper";
 import { useNavigate, useParams } from "react-router-dom";
 
 const SettingForm = () => {

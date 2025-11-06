@@ -38,6 +38,7 @@ const LoginForm = () => {
       if (!response.ok) throw new Error(data.msg || "Login failed");
       
       onSubmitProps.resetForm();
+      console.log("Login successful:", data);
       dispatch(setLogin({ user: data.user, token: data.token }));
       navigate("/home");
     } catch (err) {

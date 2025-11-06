@@ -67,22 +67,22 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     // Find the user by email
-    const user = await User.findOne({ email: email });
-    if (!user) return res.status(400).json({ msg: "The user doesn't exist." });
+    const databaseUser = await User.findOne({ email: email });
+    if (!databaseUser) return res.status(400).json({ msg: "The user doesn't exist." });
 
     // Compare the provided password with the hashed password in the database
-    const isMatch = await user.isPasswordCorrect(password);
+    const isMatch = await databaseUser.isPasswordCorrect(password);
     if (!isMatch) throw new ApiError(400, "The credentials are invalid!");
 
     // Generate JWT token using the user's ID
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
-      user._id
+      databaseUser._id
     );
 
     const token = accessToken;
 
     // Remove password before sending the user object to the client
-    const loggedInUser = await User.findById(user._id).select(
+    const user = await User.findById(databaseUser._id).select(
       "-password -refreshToken"
     );
 
@@ -96,7 +96,7 @@ const login = async (req, res) => {
       .status(200)
       .cookie("refreshToken", refreshToken, options)
       .cookie("accessToken", accessToken, options)
-      .json({ token, loggedInUser, msg: "Login successful" });
+      .json({ token, user, msg: "Login successful" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
