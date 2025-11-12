@@ -27,7 +27,6 @@ const PostsWidget = ({ userId, isProfile = false }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
-      console.log('Feed data:', data.length, 'posts');
       dispatch(setPosts({ posts: Array.isArray(data) ? data : [] }));
     } catch (error) {
       console.error("Error fetching posts:", error);

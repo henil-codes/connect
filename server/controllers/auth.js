@@ -17,11 +17,13 @@ export const register = async (req, res) => {
       lastName,
       email,
       password,
-      picturePath,
       friends,
       location,
       occupation,
     } = req.body;
+
+    // Get Cloudinary URL from uploaded file
+    const picturePath = req.file ? req.file.path : "";
 
     // Generate a random salt and hash the password for security
     const salt = await bcrypt.genSalt();

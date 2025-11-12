@@ -33,6 +33,9 @@ import { setMode, setLogout } from "../state";
 import { useNavigate } from "react-router-dom";
 import FlexBetween from "../components/ui/FlexBetween";
 import ChangePasswordModal from "../features/profile/ChangePasswordModal";
+import NotificationsWidget from "../features/notifications/NotificationsWidget";
+import MessagesWidget from "../features/messages/MessagesWidget";
+import { getImageUrl } from "../utils/imageHelper";
 
 const Navbar = () => {
   const [isMobileMenuToggled, setIsMobileMenuToggled] = useState(false);
@@ -144,51 +147,9 @@ const Navbar = () => {
               <Home sx={{ fontSize: "1.25rem", color: theme.palette.text.primary }} />
             </IconButton>
             
-            <Box position="relative">
-              <IconButton
-                sx={{
-                  backgroundColor: "transparent",
-                  "&:hover": { backgroundColor: theme.palette.primary.main + "10" },
-                  borderRadius: "50%",
-                  p: "0.75rem",
-                }}
-              >
-                <Notifications sx={{ fontSize: "1.25rem", color: theme.palette.text.primary }} />
-              </IconButton>
-              {/* Friend Request Badge */}
-              {user.friendRequestsReceived && user.friendRequestsReceived.length > 0 && (
-                <Box
-                  position="absolute"
-                  top="8px"
-                  right="8px"
-                  sx={{
-                    backgroundColor: "#F91880",
-                    color: "white",
-                    borderRadius: "50%",
-                    width: "18px",
-                    height: "18px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "0.75rem",
-                    fontWeight: "600",
-                  }}
-                >
-                  {user.friendRequestsReceived.length}
-                </Box>
-              )}
-            </Box>
+            <NotificationsWidget />
             
-            <IconButton
-              sx={{
-                backgroundColor: "transparent",
-                "&:hover": { backgroundColor: theme.palette.primary.main + "10" },
-                borderRadius: "50%",
-                p: "0.75rem",
-              }}
-            >
-              <Message sx={{ fontSize: "1.25rem", color: theme.palette.text.primary }} />
-            </IconButton>
+            <MessagesWidget />
 
             <IconButton 
               onClick={() => dispatch(setMode())}
@@ -220,7 +181,7 @@ const Navbar = () => {
               }}
             >
               <Avatar
-                src={`http://localhost:3001/assets/${user.picturePath}`}
+                src={getImageUrl(user.picturePath)}
                 sx={{ width: 32, height: 32 }}
               />
               <Box display="flex" flexDirection="column">

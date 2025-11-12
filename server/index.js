@@ -3,18 +3,22 @@ import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import multer from "multer";
 import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
 import { MongoClient } from "mongodb";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import postRoutes from "./routes/posts.js";
+import notificationRoutes from "./routes/notifications.js";
+import messageRoutes from "./routes/messages.js";
 import { register } from "./controllers/auth.js";
 import { createPost } from "./controllers/posts.js";
 import { verifyToken } from "./middleware/auth.js";
+import { upload } from "./config/cloudinary.js";
 
 
 /* CONFIGURATIONS */
@@ -32,23 +36,15 @@ app.use(cors({
   origin: "http://localhost:5173", 
   credentials: true,               
 }));
+// Keep static assets route for backward compatibility (optional)
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
-
-/* FILE STORAGE */
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "public/assets");
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
-const upload = multer({ storage });
 
 /* ROUTES */
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
+app.use("/notifications", notificationRoutes);
+app.use("/messages", messageRoutes);
 
 //route for registration and upload the registration image to multer
 app.post("/auth/register", upload.single("picture"), register);
@@ -56,12 +52,73 @@ app.post("/posts", verifyToken, upload.single("picture"), createPost);
 
 /* MONGOOSE SETUP */
 const PORT = process.env.PORT || 6001;
+
+// Create HTTP server and Socket.IO instance
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+// Socket.IO connection handling
+const onlineUsers = new Map(); // Track online users
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  // User joins with their ID
+  socket.on("join", (userId) => {
+    socket.userId = userId;
+    onlineUsers.set(userId, socket.id);
+    console.log(`User ${userId} joined`);
+    
+    // Broadcast online status to friends
+    socket.broadcast.emit("user_online", userId);
+  });
+
+  // Send message
+  socket.on("send_message", async (messageData) => {
+    // Emit to recipient if online
+    const recipientSocketId = onlineUsers.get(messageData.recipientId);
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit("receive_message", messageData);
+    }
+    
+    // Also emit back to sender for confirmation
+    socket.emit("message_sent", messageData);
+  });
+
+  // Typing indicator
+  socket.on("typing", (data) => {
+    const recipientSocketId = onlineUsers.get(data.recipientId);
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit("user_typing", {
+        userId: data.userId,
+        isTyping: data.isTyping,
+      });
+    }
+  });
+
+  // Disconnect
+  socket.on("disconnect", () => {
+    if (socket.userId) {
+      onlineUsers.delete(socket.userId);
+      socket.broadcast.emit("user_offline", socket.userId);
+      console.log(`User ${socket.userId} disconnected`);
+    }
+  });
+});
+
 export const connect = () =>
   mongoose
     .connect(process.env.MONGO_URL)
     .then(() => {
-      app.listen(PORT, () => {
+      httpServer.listen(PORT, () => {
         console.log(`Server Port: ${PORT}`);
+        console.log(`Socket.IO server running`);
       });
     })
     .catch((error) => console.log(`${error} did not connect`));

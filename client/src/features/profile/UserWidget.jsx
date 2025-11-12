@@ -12,6 +12,7 @@ import WidgetWrapper from "../../components/ui/WidgetWrapper";
 import EditProfileModal from "./EditProfileModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 import FriendButton from "../../components/ui/FriendButton";
+import MessageButton from "../../components/ui/MessageButton";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -104,9 +105,16 @@ const UserWidget = ({ userId, picturePath }) => {
                 </Typography>
               </Box>
               
-              {/* Friend Button - Only show for other users' profiles */}
+              {/* Friend & Message Buttons - Only show for other users' profiles */}
               {!isOwnProfile && (
-                <FriendButton friendId={userId} />
+                <Box display="flex" gap="0.5rem">
+                  <FriendButton friendId={userId} />
+                  <MessageButton 
+                    friendId={userId}
+                    friendName={`${user.firstName} ${user.lastName}`}
+                    friendPicture={user.picturePath}
+                  />
+                </Box>
               )}
             </Box>
           </Box>

@@ -9,27 +9,39 @@ const FriendListWidget = ({ userId }) => {
   const dispatch = useDispatch();
   const { palette } = useTheme();
   const token = useSelector((state) => state.token);
-  const friends = useSelector((state) => state.user.friends);
+  const friends = useSelector((state) => state.user.friends) || [];
   const currentUser = useSelector((state) => state.user);
   
   // Check if this is the current user's friend list
   const isOwnFriendList = currentUser._id === userId;
 
   const getFriends = async () => {
-    const response = await fetch(
-      `http://localhost:3001/users/${userId}/friends`,
-      {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
+    try {
+      const response = await fetch(
+        `http://localhost:3001/users/${userId}/friends`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      if (!response.ok) {
+        console.error("Failed to fetch friends:", response.status);
+        dispatch(setFriends({ friends: [] }));
+        return;
       }
-    );
-    const data = await response.json();
-    dispatch(setFriends({ friends: data }));
+      
+      const data = await response.json();
+      dispatch(setFriends({ friends: Array.isArray(data) ? data : [] }));
+    } catch (error) {
+      console.error("Error fetching friends:", error);
+      dispatch(setFriends({ friends: [] }));
+    }
   };
 
   useEffect(() => {
     getFriends();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <WidgetWrapper>
@@ -42,16 +54,22 @@ const FriendListWidget = ({ userId }) => {
         Friend List
       </Typography>
       <Box display="flex" flexDirection="column" gap="1.5rem">
-        {friends.map((friend) => (
-          <Friend
-            key={friend._id}
-            friendId={friend._id}
-            name={`${friend.firstName} ${friend.lastName}`}
-            subtitle={friend.occupation}
-            userPicturePath={friend.picturePath}
-            showUnfriend={isOwnFriendList}
-          />
-        ))}
+        {Array.isArray(friends) && friends.length > 0 ? (
+          friends.map((friend) => (
+            <Friend
+              key={friend._id}
+              friendId={friend._id}
+              name={`${friend.firstName} ${friend.lastName}`}
+              subtitle={friend.occupation}
+              userPicturePath={friend.picturePath}
+              showUnfriend={isOwnFriendList}
+            />
+          ))
+        ) : (
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            No friends yet
+          </Typography>
+        )}
       </Box>
     </WidgetWrapper>
   );

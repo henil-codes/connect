@@ -16,23 +16,39 @@ const FriendButton = ({ friendId }) => {
   // Check if this is the user's own profile
   const isOwnProfile = _id === friendId;
 
-  // Check friend status
+  // Fetch fresh friend status from server
   useEffect(() => {
-    // Check if friends array contains friend objects or just IDs
-    const isFriend = user?.friends?.some(friend => {
-      // Handle both string IDs and object formats
-      const friendIdToCheck = typeof friend === 'string' ? friend : friend?._id;
-      return friendIdToCheck === friendId;
-    });
+    const checkFriendStatus = async () => {
+      if (!friendId || !_id) return;
+      
+      try {
+        // Fetch current user's data directly from server
+        const response = await fetch(`http://localhost:3001/users/${_id}`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const userData = await response.json();
+        
+        // Check if friend
+        const isFriend = userData.friends?.includes(friendId);
+        
+        // Check if request sent
+        const requestSent = userData.friendRequestsSent?.includes(friendId);
+        
+        if (isFriend) {
+          setFriendStatus("friends");
+        } else if (requestSent) {
+          setFriendStatus("pending");
+        } else {
+          setFriendStatus("none");
+        }
+      } catch (error) {
+        console.error("Error checking friend status:", error);
+      }
+    };
     
-    if (isFriend) {
-      setFriendStatus("friends");
-    } else if (user?.friendRequestsSent && user.friendRequestsSent.includes(friendId)) {
-      setFriendStatus("pending");
-    } else {
-      setFriendStatus("none");
-    }
-  }, [user, friendId]);
+    checkFriendStatus();
+  }, [friendId, _id, token]);
 
   const sendFriendRequest = async () => {
     setLoading(true);

@@ -15,6 +15,7 @@ import WidgetWrapper from "../../components/ui/WidgetWrapper";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setPost, setPosts } from "../../state";
+import { getImageUrl } from "../../utils/imageHelper";
 
 const PostWidget = ({
   postId,
@@ -179,7 +180,7 @@ const PostWidget = ({
             height="auto"
             alt="post"
             style={{ display: "block" }}
-            src={`http://localhost:3001/assets/${picturePath}`}
+            src={getImageUrl(picturePath)}
           />
         </Box>
       )}
