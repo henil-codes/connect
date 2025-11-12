@@ -1,7 +1,8 @@
 import { Box, useMediaQuery } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
+import { setFriends } from "../state";
 import Navbar from "../layout/Navbar.jsx";
 import FriendListWidget from "../features/profile/FriendListWidget.jsx";
 import MyPostWidget from "../features/post/MyPostWidget.jsx";
@@ -11,6 +12,7 @@ import UserWidget from "../features/profile/UserWidget.jsx";
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
   const { userId } = useParams();
+  const dispatch = useDispatch();
   const token = useSelector((state) => state.token);
   const loggedInUser = useSelector((state) => state.user);
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
@@ -27,9 +29,30 @@ const ProfilePage = () => {
     setUser(data);
   };
 
+  // Refresh logged-in user's friends list to ensure FriendButton has latest data
+  const refreshCurrentUserFriends = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/users/${loggedInUser._id}/friends`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const friends = await response.json();
+      dispatch(setFriends({ friends }));
+    } catch (error) {
+      console.error("Error refreshing friends:", error);
+    }
+  };
+
   useEffect(() => {
     getUser();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // Only refresh friends if the list is empty or undefined
+    if (!loggedInUser.friends || loggedInUser.friends.length === 0) {
+      refreshCurrentUserFriends();
+    }
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!user) return null;
 

@@ -1,11 +1,16 @@
 import Post from "../models/Post.js";
 import User from "../models/User.js";
+import { createNotification } from "./notifications.js";
 
 /* CREATE */
 export const createPost = async (req, res) => {
   try {
-    const { userId, description, picturePath } = req.body;
+    const { userId, description } = req.body;
     const user = await User.findById(userId);
+    
+    // Get Cloudinary URL from uploaded file
+    const picturePath = req.file ? req.file.path : "";
+    
     const newPost = new Post({
       userId,
       firstName: user.firstName,
@@ -89,6 +94,18 @@ export const likePost = async (req, res) => {
       post.likes.delete(userId);
     } else {
       post.likes.set(userId, true);
+      
+      // Create notification for post owner (only when liking, not unliking)
+      const liker = await User.findById(userId);
+      await createNotification(
+        post.userId,
+        userId,
+        `${liker.firstName} ${liker.lastName}`,
+        liker.picturePath,
+        "like",
+        `liked your post`,
+        id
+      );
     }
 
     const updatedPost = await Post.findByIdAndUpdate(
@@ -106,7 +123,7 @@ export const likePost = async (req, res) => {
 export const addComment = async (req, res) => {
   try {
     const { id } = req.params;
-    const { comment } = req.body;
+    const { comment, userId } = req.body;
     
     console.log(`Adding comment to post ${id}:`, comment);
     
@@ -121,6 +138,18 @@ export const addComment = async (req, res) => {
       console.log(`Post with id ${id} not found`);
       return res.status(404).json({ message: "Post not found" });
     }
+
+    // Create notification for post owner
+    const commenter = await User.findById(userId);
+    await createNotification(
+      updatedPost.userId,
+      userId,
+      `${commenter.firstName} ${commenter.lastName}`,
+      commenter.picturePath,
+      "comment",
+      `commented on your post`,
+      id
+    );
 
     console.log(`Comment added successfully. Post now has ${updatedPost.comments.length} comments`);
     res.status(200).json(updatedPost);

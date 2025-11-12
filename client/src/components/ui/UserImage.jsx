@@ -1,4 +1,5 @@
 import { Box } from "@mui/material";
+import { getImageUrl } from "../../utils/imageHelper";
 
 const UserImage = ({ image, size = "60px" }) => {
   return (
@@ -8,7 +9,7 @@ const UserImage = ({ image, size = "60px" }) => {
         width={size}
         height={size}
         alt="user"
-        src={`http://localhost:3001/assets/${image}`}
+        src={getImageUrl(image)}
       />
     </Box>
   );

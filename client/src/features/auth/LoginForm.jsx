@@ -31,15 +31,12 @@ const LoginForm = () => {
 
   const login = async (values, onSubmitProps) => {
     try {
-      console.log("Attempting login with:", values);
       const loggedInResponse = await fetch("http://localhost:3001/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
-      console.log("Response status:", loggedInResponse.status);
       const loggedIn = await loggedInResponse.json();
-      console.log("Response data:", loggedIn);
       
       if (loggedIn.error || loggedIn.msg) {
         setError(loggedIn.error || loggedIn.msg);

@@ -3,11 +3,13 @@ import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import FindFriendsPage from "./pages/FindFriendsPage.jsx";
+import MessagesPage from "./pages/MessagesPage.jsx";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import { themeSettings } from "./hooks/theme";
+import { SocketProvider } from "./context/SocketContext";
 
 const App = () => {
   const mode = useSelector((state) => state.mode);
@@ -23,7 +25,8 @@ const App = () => {
       <BrowserRouter>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <Routes>
+          <SocketProvider>
+            <Routes>
             <Route path="/" element={<LoginPage />} />
             <Route
               path="/home"
@@ -34,10 +37,15 @@ const App = () => {
               element={isAuth ? <FindFriendsPage /> : <Navigate to="/" />}
             />
             <Route
+              path="/messages"
+              element={isAuth ? <MessagesPage /> : <Navigate to="/" />}
+            />
+            <Route
               path="/profile/:userId"
               element={isAuth ? <ProfilePage /> : <Navigate to="/" />}
             />
-          </Routes>
+            </Routes>
+          </SocketProvider>
         </ThemeProvider>
       </BrowserRouter>
     </div>
