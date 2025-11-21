@@ -16,10 +16,17 @@ import { setLogin } from "../../state";
 import Dropzone from "react-dropzone";
 
 const registerSchema = yup.object().shape({
-  firstName: yup.string().required("required"),
-  lastName: yup.string().required("required"),
+  firstName: yup.string().min(2, "First name must be at least 2 characters").max(50, "First name must be less than 50 characters").required("required"),
+  lastName: yup.string().min(2, "Last name must be at least 2 characters").max(50, "Last name must be less than 50 characters").required("required"),
   email: yup.string().email("invalid email").required("required"),
-  password: yup.string().required("required"),
+  password: yup
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .matches(/[a-z]/, "Must contain at least one lowercase letter")
+    .matches(/[A-Z]/, "Must contain at least one uppercase letter")
+    .matches(/[0-9]/, "Must contain at least one number")
+    .matches(/[@$!%*?&#]/, "Must contain at least one special character (@$!%*?&#)")
+    .required("required"),
   location: yup.string().required("required"),
   occupation: yup.string().required("required"),
   bio: yup.string().max(160, "Bio must be 160 characters or less"),
@@ -185,11 +192,22 @@ const RegisterForm = () => {
               p="1rem"
             >
               <Dropzone
-                acceptedFiles=".jpg,.jpeg,.png"
+                acceptedFiles=".jpg,.jpeg,.png,.gif,.webp"
+                maxSize={5242880}
                 multiple={false}
-                onDrop={(acceptedFiles) =>
-                  setFieldValue("picture", acceptedFiles[0])
-                }
+                onDrop={(acceptedFiles, rejectedFiles) => {
+                  if (rejectedFiles.length > 0) {
+                    const rejection = rejectedFiles[0];
+                    if (rejection.file.size > 5242880) {
+                      setError("Image must be less than 5MB");
+                    } else {
+                      setError("Invalid file type. Please upload an image (jpg, png, gif, webp)");
+                    }
+                  } else {
+                    setFieldValue("picture", acceptedFiles[0]);
+                    setError("");
+                  }
+                }}
               >
                 {({ getRootProps, getInputProps }) => (
                   <Box

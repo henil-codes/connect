@@ -18,11 +18,14 @@ const ChatWindow = ({ userId, conversation, onBack }) => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [error, setError] = useState("");
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const token = useSelector((state) => state.token);
   const theme = useTheme();
   const { socket, onlineUsers } = useSocket();
+  
+  const MAX_MESSAGE_LENGTH = 1000;
 
   const fetchMessages = async () => {
     if (!conversation) return;
@@ -111,7 +114,14 @@ const ChatWindow = ({ userId, conversation, onBack }) => {
   const handleSendMessage = async () => {
     if (!newMessage.trim() || loading || !socket) return;
 
+    // Validate message length
+    if (newMessage.trim().length > MAX_MESSAGE_LENGTH) {
+      setError(`Message must be ${MAX_MESSAGE_LENGTH} characters or less`);
+      return;
+    }
+
     setLoading(true);
+    setError("");
     try {
       // Save to database
       const response = await fetch("http://localhost:3001/messages", {
@@ -141,9 +151,12 @@ const ChatWindow = ({ userId, conversation, onBack }) => {
           recipientId: conversation.partnerId,
           isTyping: false,
         });
+      } else {
+        setError("Failed to send message. Please try again.");
       }
     } catch (error) {
       console.error("Error sending message:", error);
+      setError("Failed to send message. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -151,6 +164,7 @@ const ChatWindow = ({ userId, conversation, onBack }) => {
 
   const handleTyping = (value) => {
     setNewMessage(value);
+    setError("");
 
     if (!socket) return;
 
@@ -316,51 +330,64 @@ const ChatWindow = ({ userId, conversation, onBack }) => {
         p="1rem 1.5rem"
         borderTop="1px solid"
         borderColor="neutral.light"
-        display="flex"
-        gap="1rem"
-        alignItems="center"
       >
-        <InputBase
-          placeholder="Type a message..."
-          value={newMessage}
-          onChange={(e) => handleTyping(e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSendMessage();
-            }
-          }}
-          multiline
-          maxRows={4}
-          sx={{
-            flex: 1,
-            backgroundColor: theme.palette.background.alt,
-            borderRadius: "20px",
-            padding: "0.5rem 1rem",
-            fontSize: "0.9rem",
-          }}
-        />
-        <IconButton
-          onClick={handleSendMessage}
-          disabled={!newMessage.trim() || loading}
-          sx={{
-            backgroundColor: newMessage.trim()
-              ? theme.palette.primary.main
-              : theme.palette.neutral.light,
-            color: newMessage.trim() ? "white" : theme.palette.neutral.medium,
-            "&:hover": {
-              backgroundColor: newMessage.trim()
-                ? theme.palette.primary.dark
+        {error && (
+          <Typography color="error" variant="caption" sx={{ display: "block", mb: "0.5rem" }}>
+            {error}
+          </Typography>
+        )}
+        <Box display="flex" gap="1rem" alignItems="center">
+          <Box flex={1}>
+            <InputBase
+              placeholder="Type a message..."
+              value={newMessage}
+              onChange={(e) => handleTyping(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              multiline
+              maxRows={4}
+              sx={{
+                width: "100%",
+                backgroundColor: theme.palette.background.alt,
+                borderRadius: "20px",
+                padding: "0.5rem 1rem",
+                fontSize: "0.9rem",
+              }}
+            />
+            <Typography 
+              variant="caption" 
+              color={newMessage.length > MAX_MESSAGE_LENGTH ? "error" : "text.secondary"}
+              sx={{ display: "block", mt: "0.25rem", ml: "1rem" }}
+            >
+              {newMessage.length}/{MAX_MESSAGE_LENGTH}
+            </Typography>
+          </Box>
+          <IconButton
+            onClick={handleSendMessage}
+            disabled={!newMessage.trim() || loading || newMessage.length > MAX_MESSAGE_LENGTH}
+            sx={{
+              backgroundColor: (newMessage.trim() && newMessage.length <= MAX_MESSAGE_LENGTH)
+                ? theme.palette.primary.main
                 : theme.palette.neutral.light,
-            },
-            "&:disabled": {
-              backgroundColor: theme.palette.neutral.light,
-              color: theme.palette.neutral.medium,
-            },
-          }}
-        >
-          <Send sx={{ fontSize: "1.2rem" }} />
-        </IconButton>
+              color: (newMessage.trim() && newMessage.length <= MAX_MESSAGE_LENGTH) ? "white" : theme.palette.neutral.medium,
+              "&:hover": {
+                backgroundColor: (newMessage.trim() && newMessage.length <= MAX_MESSAGE_LENGTH)
+                  ? theme.palette.primary.dark
+                  : theme.palette.neutral.light,
+              },
+              "&:disabled": {
+                backgroundColor: theme.palette.neutral.light,
+                color: theme.palette.neutral.medium,
+              },
+            }}
+          >
+            <Send sx={{ fontSize: "1.2rem" }} />
+          </IconButton>
+        </Box>
       </Box>
     </Box>
   );

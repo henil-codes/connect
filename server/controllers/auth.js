@@ -22,6 +22,29 @@ export const register = async (req, res) => {
       occupation,
     } = req.body;
 
+    // Check if email already exists
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return res.status(400).json({ error: "Email already registered" });
+    }
+
+    // Validate password strength
+    if (password.length < 8) {
+      return res.status(400).json({ error: "Password must be at least 8 characters" });
+    }
+    if (!/[a-z]/.test(password)) {
+      return res.status(400).json({ error: "Password must contain at least one lowercase letter" });
+    }
+    if (!/[A-Z]/.test(password)) {
+      return res.status(400).json({ error: "Password must contain at least one uppercase letter" });
+    }
+    if (!/[0-9]/.test(password)) {
+      return res.status(400).json({ error: "Password must contain at least one number" });
+    }
+    if (!/[@$!%*?&#]/.test(password)) {
+      return res.status(400).json({ error: "Password must contain at least one special character" });
+    }
+
     // Get Cloudinary URL from uploaded file
     const picturePath = req.file ? req.file.path : "";
 
@@ -33,7 +56,7 @@ export const register = async (req, res) => {
     const newUser = new User({
       firstName,
       lastName,
-      email,
+      email: email.toLowerCase(), // Store email in lowercase for consistency
       password: passwordHash,
       picturePath,
       friends,
@@ -64,9 +87,9 @@ export const login = async (req, res) => {
     console.log("Login attempt:", req.body);
     const { email, password } = req.body;
 
-    // Find user by email
+    // Find user by email (case-insensitive)
     console.log("Looking for user with email:", email);
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       console.log("User not found");
       return res.status(400).json({ msg: "User does not exist." });

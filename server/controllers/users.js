@@ -52,9 +52,32 @@ export const updateUser = async (req, res) => {
     const { id } = req.params;
     const { firstName, lastName, location, occupation, bio } = req.body;
     
+    // Validate input
+    if (!firstName || !firstName.trim() || !lastName || !lastName.trim()) {
+      return res.status(400).json({ message: "First name and last name are required" });
+    }
+
+    if (firstName.length < 2 || firstName.length > 50) {
+      return res.status(400).json({ message: "First name must be between 2 and 50 characters" });
+    }
+
+    if (lastName.length < 2 || lastName.length > 50) {
+      return res.status(400).json({ message: "Last name must be between 2 and 50 characters" });
+    }
+
+    if (bio && bio.length > 160) {
+      return res.status(400).json({ message: "Bio must be 160 characters or less" });
+    }
+    
     const updatedUser = await User.findByIdAndUpdate(
       id,
-      { firstName, lastName, location, occupation, bio },
+      { 
+        firstName: firstName.trim(), 
+        lastName: lastName.trim(), 
+        location: location?.trim() || "", 
+        occupation: occupation?.trim() || "", 
+        bio: bio?.trim() || "" 
+      },
       { new: true }
     );
 

@@ -6,6 +6,16 @@ import { createNotification } from "./notifications.js";
 export const createPost = async (req, res) => {
   try {
     const { userId, description } = req.body;
+
+    // Validate description
+    if (!description || !description.trim()) {
+      return res.status(400).json({ message: "Post description cannot be empty" });
+    }
+
+    if (description.length > 500) {
+      return res.status(400).json({ message: "Post must be 500 characters or less" });
+    }
+
     const user = await User.findById(userId);
     
     // Get Cloudinary URL from uploaded file
@@ -16,7 +26,7 @@ export const createPost = async (req, res) => {
       firstName: user.firstName,
       lastName: user.lastName,
       location: user.location,
-      description,
+      description: description.trim(),
       userPicturePath: user.picturePath,
       picturePath,
       likes: {},
@@ -125,12 +135,21 @@ export const addComment = async (req, res) => {
     const { id } = req.params;
     const { comment, userId } = req.body;
     
+    // Validate comment
+    if (!comment || !comment.trim()) {
+      return res.status(400).json({ message: "Comment cannot be empty" });
+    }
+
+    if (comment.length > 500) {
+      return res.status(400).json({ message: "Comment must be 500 characters or less" });
+    }
+    
     console.log(`Adding comment to post ${id}:`, comment);
     
     // Use $push to add the comment to the array and return the updated document
     const updatedPost = await Post.findByIdAndUpdate(
       id,
-      { $push: { comments: comment } },
+      { $push: { comments: comment.trim() } },
       { new: true }
     );
 
@@ -164,6 +183,15 @@ export const editPost = async (req, res) => {
     const { id } = req.params;
     const { description } = req.body;
     
+    // Validate description
+    if (!description || !description.trim()) {
+      return res.status(400).json({ message: "Post description cannot be empty" });
+    }
+
+    if (description.length > 500) {
+      return res.status(400).json({ message: "Post must be 500 characters or less" });
+    }
+
     const post = await Post.findById(id);
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
@@ -172,7 +200,7 @@ export const editPost = async (req, res) => {
     // Update the post description
     const updatedPost = await Post.findByIdAndUpdate(
       id,
-      { description },
+      { description: description.trim() },
       { new: true }
     );
     
