@@ -7,6 +7,15 @@ export const sendMessage = async (req, res) => {
   try {
     const { senderId, recipientId, text } = req.body;
 
+    // Validate message text
+    if (!text || !text.trim()) {
+      return res.status(400).json({ message: "Message cannot be empty" });
+    }
+
+    if (text.length > 1000) {
+      return res.status(400).json({ message: "Message must be 1000 characters or less" });
+    }
+
     // Verify both users exist
     const sender = await User.findById(senderId);
     const recipient = await User.findById(recipientId);
@@ -24,7 +33,7 @@ export const sendMessage = async (req, res) => {
     const message = new Message({
       senderId,
       recipientId,
-      text,
+      text: text.trim(),
     });
 
     await message.save();

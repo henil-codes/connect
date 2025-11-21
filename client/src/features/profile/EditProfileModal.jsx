@@ -43,6 +43,31 @@ const EditProfileModal = ({ open, onClose, user }) => {
     setLoading(true);
     setError("");
 
+    // Validation
+    if (!formData.firstName.trim() || !formData.lastName.trim()) {
+      setError("First name and last name are required");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.firstName.length < 2 || formData.firstName.length > 50) {
+      setError("First name must be between 2 and 50 characters");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.lastName.length < 2 || formData.lastName.length > 50) {
+      setError("Last name must be between 2 and 50 characters");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.bio.length > 160) {
+      setError("Bio must be 160 characters or less");
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(`http://localhost:3001/users/${user._id}`, {
         method: "PATCH",
@@ -50,7 +75,13 @@ const EditProfileModal = ({ open, onClose, user }) => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          location: formData.location.trim(),
+          occupation: formData.occupation.trim(),
+          bio: formData.bio.trim(),
+        }),
       });
 
       const updatedUser = await response.json();

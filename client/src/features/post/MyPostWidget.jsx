@@ -30,6 +30,7 @@ const MyPostWidget = ({ picturePath }) => {
   const [isImage, setIsImage] = useState(false);
   const [image, setImage] = useState(null);
   const [post, setPost] = useState("");
+  const [error, setError] = useState("");
   const { palette } = useTheme();
   const { _id } = useSelector((state) => state.user);
   const token = useSelector((state) => state.token);
@@ -37,11 +38,31 @@ const MyPostWidget = ({ picturePath }) => {
   const mediumMain = palette.neutral.mediumMain;
   const medium = palette.neutral.medium;
 
+  const MAX_POST_LENGTH = 500;
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
   const handlePost = async () => {
+    // Validation
+    if (!post.trim()) {
+      setError("Post cannot be empty");
+      return;
+    }
+    
+    if (post.length > MAX_POST_LENGTH) {
+      setError(`Post must be ${MAX_POST_LENGTH} characters or less`);
+      return;
+    }
+
+    if (image && image.size > MAX_FILE_SIZE) {
+      setError("Image must be less than 5MB");
+      return;
+    }
+
     try {
+      setError("");
       const formData = new FormData();
       formData.append("userId", _id);
-      formData.append("description", post);
+      formData.append("description", post.trim());
       if (image) {
         formData.append("picture", image);
         formData.append("picturePath", image.name);
@@ -58,6 +79,7 @@ const MyPostWidget = ({ picturePath }) => {
       setPost("");
     } catch (error) {
       console.error("Error creating post:", error);
+      setError("Failed to create post. Please try again.");
     }
   };
 
@@ -67,9 +89,17 @@ const MyPostWidget = ({ picturePath }) => {
       <FlexBetween gap="1rem" alignItems="flex-start">
         <UserImage image={picturePath} size="40px" />
         <Box flex={1}>
+          {error && (
+            <Typography color="error" variant="body2" sx={{ mb: "0.5rem" }}>
+              {error}
+            </Typography>
+          )}
           <InputBase
             placeholder="What's happening?"
-            onChange={(e) => setPost(e.target.value)}
+            onChange={(e) => {
+              setPost(e.target.value);
+              setError("");
+            }}
             value={post}
             multiline
             maxRows={6}
@@ -86,6 +116,13 @@ const MyPostWidget = ({ picturePath }) => {
               },
             }}
           />
+          <Typography 
+            variant="caption" 
+            color={post.length > MAX_POST_LENGTH ? "error" : "text.secondary"}
+            sx={{ display: "block", mt: "0.25rem" }}
+          >
+            {post.length}/{MAX_POST_LENGTH}
+          </Typography>
           
           {/* Image Upload Area */}
           {isImage && (
@@ -96,9 +133,22 @@ const MyPostWidget = ({ picturePath }) => {
               p="1rem"
             >
               <Dropzone
-                acceptedFiles=".jpg,.jpeg,.png"
+                acceptedFiles=".jpg,.jpeg,.png,.gif,.webp"
+                maxSize={MAX_FILE_SIZE}
                 multiple={false}
-                onDrop={(acceptedFiles) => setImage(acceptedFiles[0])}
+                onDrop={(acceptedFiles, rejectedFiles) => {
+                  if (rejectedFiles.length > 0) {
+                    const rejection = rejectedFiles[0];
+                    if (rejection.file.size > MAX_FILE_SIZE) {
+                      setError("Image must be less than 5MB");
+                    } else {
+                      setError("Invalid file type. Please upload an image (jpg, png, gif, webp)");
+                    }
+                  } else {
+                    setImage(acceptedFiles[0]);
+                    setError("");
+                  }
+                }}
               >
                 {({ getRootProps, getInputProps }) => (
                   <Box>
@@ -197,7 +247,7 @@ const MyPostWidget = ({ picturePath }) => {
 
         {/* Post Button */}
         <Button
-          disabled={!post.trim()}
+          disabled={!post.trim() || post.length > MAX_POST_LENGTH}
           onClick={handlePost}
           variant="contained"
           sx={{

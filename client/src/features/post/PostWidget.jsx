@@ -34,6 +34,10 @@ const PostWidget = ({
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedDescription, setEditedDescription] = useState(description);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [commentError, setCommentError] = useState("");
+  
+  const MAX_COMMENT_LENGTH = 500;
+  const MAX_POST_LENGTH = 500;
   
   const dispatch = useDispatch();
   const token = useSelector((state) => state.token);
@@ -64,9 +68,18 @@ const PostWidget = ({
   };
 
   const handleComment = async () => {
-    if (!comment.trim()) return;
+    if (!comment.trim()) {
+      setCommentError("Comment cannot be empty");
+      return;
+    }
+    
+    if (comment.length > MAX_COMMENT_LENGTH) {
+      setCommentError(`Comment must be ${MAX_COMMENT_LENGTH} characters or less`);
+      return;
+    }
     
     try {
+      setCommentError("");
       const response = await fetch(`http://localhost:3001/posts/${postId}/comment`, {
         method: "PATCH",
         headers: {
@@ -75,7 +88,7 @@ const PostWidget = ({
         },
         body: JSON.stringify({ 
           userId: loggedInUserId,
-          comment: `${loggedInUser.firstName} ${loggedInUser.lastName}: ${comment}`
+          comment: `${loggedInUser.firstName} ${loggedInUser.lastName}: ${comment.trim()}`
         }),
       });
       const updatedPost = await response.json();
@@ -83,11 +96,18 @@ const PostWidget = ({
       setComment("");
     } catch (error) {
       console.error("Error adding comment:", error);
+      setCommentError("Failed to add comment. Please try again.");
     }
   };
 
   const handleEditPost = async () => {
-    if (!editedDescription.trim()) return;
+    if (!editedDescription.trim()) {
+      return;
+    }
+    
+    if (editedDescription.length > MAX_POST_LENGTH) {
+      return;
+    }
     
     try {
       const response = await fetch(`http://localhost:3001/posts/${postId}/edit`, {
@@ -292,48 +312,68 @@ const PostWidget = ({
           )}
           
           {/* Add Comment Input */}
-          <Box display="flex" alignItems="center" gap="0.75rem">
-            <InputBase
-              placeholder="Tweet your reply..."
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              sx={{
-                flex: 1,
-                backgroundColor: palette.background.alt,
-                borderRadius: "20px",
-                padding: "0.5rem 1rem",
-                fontSize: "0.875rem",
-                border: `1px solid ${palette.neutral.light}`,
-                "&:focus-within": {
-                  borderColor: primary,
-                },
-              }}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  handleComment();
-                }
-              }}
-            />
-            <IconButton 
-              onClick={handleComment}
-              disabled={!comment.trim()}
-              size="small"
-              sx={{ 
-                backgroundColor: comment.trim() ? primary : palette.neutral.light,
-                color: comment.trim() ? "white" : palette.neutral.medium,
-                width: "32px",
-                height: "32px",
-                "&:hover": {
-                  backgroundColor: comment.trim() ? palette.primary.dark : palette.neutral.light,
-                },
-                "&:disabled": {
-                  backgroundColor: palette.neutral.light,
-                  color: palette.neutral.medium,
-                }
-              }}
-            >
-              <Send sx={{ fontSize: "0.9rem" }} />
-            </IconButton>
+          <Box>
+            {commentError && (
+              <Typography color="error" variant="caption" sx={{ display: "block", mb: "0.5rem" }}>
+                {commentError}
+              </Typography>
+            )}
+            <Box display="flex" alignItems="center" gap="0.75rem">
+              <Box flex={1}>
+                <InputBase
+                  placeholder="Tweet your reply..."
+                  value={comment}
+                  onChange={(e) => {
+                    setComment(e.target.value);
+                    setCommentError("");
+                  }}
+                  sx={{
+                    width: "100%",
+                    backgroundColor: palette.background.alt,
+                    borderRadius: "20px",
+                    padding: "0.5rem 1rem",
+                    fontSize: "0.875rem",
+                    border: `1px solid ${palette.neutral.light}`,
+                    "&:focus-within": {
+                      borderColor: primary,
+                    },
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleComment();
+                    }
+                  }}
+                />
+                <Typography 
+                  variant="caption" 
+                  color={comment.length > MAX_COMMENT_LENGTH ? "error" : "text.secondary"}
+                  sx={{ display: "block", mt: "0.25rem", ml: "1rem" }}
+                >
+                  {comment.length}/{MAX_COMMENT_LENGTH}
+                </Typography>
+              </Box>
+              <IconButton 
+                onClick={handleComment}
+                disabled={!comment.trim() || comment.length > MAX_COMMENT_LENGTH}
+                size="small"
+                sx={{ 
+                  backgroundColor: (comment.trim() && comment.length <= MAX_COMMENT_LENGTH) ? primary : palette.neutral.light,
+                  color: (comment.trim() && comment.length <= MAX_COMMENT_LENGTH) ? "white" : palette.neutral.medium,
+                  width: "32px",
+                  height: "32px",
+                  "&:hover": {
+                    backgroundColor: (comment.trim() && comment.length <= MAX_COMMENT_LENGTH) ? palette.primary.dark : palette.neutral.light,
+                  },
+                  "&:disabled": {
+                    backgroundColor: palette.neutral.light,
+                    color: palette.neutral.medium,
+                  }
+                }}
+              >
+                <Send sx={{ fontSize: "0.9rem" }} />
+              </IconButton>
+            </Box>
           </Box>
         </Box>
       )}
@@ -370,6 +410,8 @@ const PostWidget = ({
             onChange={(e) => setEditedDescription(e.target.value)}
             placeholder="What's on your mind?"
             sx={{ mt: 1 }}
+            helperText={`${editedDescription.length}/${MAX_POST_LENGTH}`}
+            error={editedDescription.length > MAX_POST_LENGTH}
           />
         </DialogContent>
         <DialogActions>
@@ -377,7 +419,7 @@ const PostWidget = ({
           <Button 
             onClick={handleEditPost} 
             variant="contained"
-            disabled={!editedDescription.trim()}
+            disabled={!editedDescription.trim() || editedDescription.length > MAX_POST_LENGTH}
           >
             Save Changes
           </Button>
